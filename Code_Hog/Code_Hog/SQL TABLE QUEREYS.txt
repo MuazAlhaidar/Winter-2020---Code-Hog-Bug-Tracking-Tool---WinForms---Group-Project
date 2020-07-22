@@ -1,0 +1,52 @@
+﻿CREATE TABLE [dbo].[User_Roles] (
+    [RoleID]   INT          NOT NULL,
+    [RoleName] VARCHAR (20) NOT NULL,
+    PRIMARY KEY CLUSTERED ([RoleID] ASC)
+);
+
+CREATE TABLE [dbo].[Users] (
+    [UserID]   INT          IDENTITY (1, 1) NOT NULL,
+    [Username] VARCHAR (30) NOT NULL,
+    [Password] VARCHAR (30) NOT NULL,
+    [RoleID]   INT          NOT NULL,
+    [Email] VARCHAR(50) NOT NULL, 
+    PRIMARY KEY CLUSTERED ([UserID] ASC),
+    CONSTRAINT [FK_Users_ToUserRoles] FOREIGN KEY ([RoleID]) REFERENCES [dbo].[User_Roles] ([RoleID])
+);
+
+CREATE TABLE [dbo].[Tickets] (
+    [TicketID]            INT            IDENTITY (1, 1) NOT NULL,
+    [TicketName]          VARCHAR (80)   NOT NULL,
+    [TicketStatus]        INT            NOT NULL,
+    [TicketPriority]      INT            NOT NULL,
+    [TicketArchiveStatus] BIT            DEFAULT ((0)) NOT NULL,
+    [TicketDescription]   VARCHAR (1000) NOT NULL,
+    [TicketReporter]      INT            NOT NULL,
+    PRIMARY KEY CLUSTERED ([TicketID] ASC),
+    CONSTRAINT [FK_Tickets_ToUsers] FOREIGN KEY ([TicketReporter]) REFERENCES [dbo].[Users] ([UserID])
+);
+
+CREATE TABLE [dbo].[Notes] (
+    [NoteID]   INT           IDENTITY (1, 1) NOT NULL,
+    [TicketID] INT           NOT NULL,
+    [UserID]   INT           NOT NULL,
+    [Note]     VARCHAR (180) NOT NULL,
+    PRIMARY KEY CLUSTERED ([NoteID] ASC),
+    CONSTRAINT [FK_Notes_ToUsers] FOREIGN KEY ([UserID]) REFERENCES [dbo].[Users] ([UserID]),
+    CONSTRAINT [FK_Notes_ToTickets] FOREIGN KEY ([TicketID]) REFERENCES [dbo].[Tickets] ([TicketID]) ON DELETE CASCADE
+);
+
+CREATE TABLE [dbo].[Dependencies] (
+    [DependencyID]      INT IDENTITY (1, 1) NOT NULL,
+    [TicketID]          INT NOT NULL,
+    [DependentTicketID] INT NOT NULL,
+    PRIMARY KEY CLUSTERED ([DependencyID] ASC),
+    CONSTRAINT [FK_Dependencies_ToTicketsForTicket] FOREIGN KEY ([TicketID]) REFERENCES [dbo].[Tickets] ([TicketID]),
+    CONSTRAINT [FK_Dependencies_ToTicketsForDependenciesOnTicket] FOREIGN KEY ([DependentTicketID]) REFERENCES [dbo].[Tickets] ([TicketID]) ON DELETE CASCADE
+);
+
+INSERT INTO User_Roles ( RoleID, RoleName)
+values 
+( 1, 'Developer' ), 
+( 2, 'Administrator' ), 
+( 3, 'System Administrator' )
